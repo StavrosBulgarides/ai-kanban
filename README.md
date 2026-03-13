@@ -278,4 +278,4 @@ If you change the key after credentials have already been stored, existing encry
 
 ## License
 
-[Add licence here]
+This project is licensed under the [GNU Affero General Public License v3.0](./LICENSE). This means you can freely use, modify, and distribute the software, but if you run a modified version as a network service, you must make your source code available to its users.
