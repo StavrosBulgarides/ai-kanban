@@ -21,14 +21,14 @@ export interface WorkItem {
   status_id: string;
   title: string;
   description: string;
-  priority: Priority;
   sort_order: number;
   parent_id: string | null;
+  in_progress_since: string | null;
+  viewed_output_at: string | null;
+  tool_permissions: string | null;
   created_at: string;
   updated_at: string;
 }
-
-export type Priority = 'urgent' | 'high' | 'medium' | 'low' | 'none';
 
 export interface Tag {
   id: string;
@@ -42,6 +42,7 @@ export interface DriveRoot {
   name: string;
   path: string;
   description: string;
+  purpose: 'input' | 'output';
   created_at: string;
 }
 
@@ -124,6 +125,14 @@ export interface WorkItemTemplate {
   last_triggered_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ClarificationMessage {
+  id: string;
+  work_item_id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
 }
 
 export interface NormalizedItem {

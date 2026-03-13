@@ -3,6 +3,7 @@ import { z } from 'zod';
 import * as Integrations from '../db/models/integrations.js';
 import { getAdapter, buildConfig, listAdapterTypes } from '../integrations/registry.js';
 import { decrypt } from '../lib/crypto.js';
+import { logAudit } from '../services/eventLog.js';
 
 const router = Router();
 
@@ -26,7 +27,9 @@ const createSchema = z.object({
 
 router.post('/integrations', (req, res) => {
   const data = createSchema.parse(req.body);
-  res.status(201).json(Integrations.createIntegration(data));
+  const integration = Integrations.createIntegration(data);
+  logAudit('integration.create', `id=${integration.id} name="${data.name}" type=${data.type} can_write=${data.can_write ?? false}`);
+  res.status(201).json(integration);
 });
 
 const updateSchema = z.object({
@@ -43,11 +46,14 @@ router.put('/integrations/:id', (req, res) => {
   const data = updateSchema.parse(req.body);
   const integration = Integrations.updateIntegration(req.params.id, data);
   if (!integration) return res.status(404).json({ error: 'Integration not found' });
+  const changes = Object.entries(data).filter(([, v]) => v !== undefined).map(([k, v]) => `${k}=${v}`).join(' ');
+  logAudit('integration.update', `id=${req.params.id} ${changes}`);
   res.json(integration);
 });
 
 router.delete('/integrations/:id', (req, res) => {
   if (!Integrations.deleteIntegration(req.params.id)) return res.status(404).json({ error: 'Integration not found' });
+  logAudit('integration.delete', `id=${req.params.id}`);
   res.json({ ok: true });
 });
 

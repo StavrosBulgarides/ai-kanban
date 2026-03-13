@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { fetchIntegrations, createIntegration, deleteIntegration, testIntegration, updateIntegration } from '@/api/integrations';
+import { fetchConfig } from '@/api/config';
 
 const AUTH_TYPES = ['pat', 'api_key', 'bearer'] as const;
 const INTEGRATION_TYPES = ['jira', 'aha', 'github', 'custom'] as const;
@@ -13,10 +14,12 @@ const INTEGRATION_TYPES = ['jira', 'aha', 'github', 'custom'] as const;
 export function IntegrationSettings() {
   const qc = useQueryClient();
   const { data: integrations } = useQuery({ queryKey: ['integrations'], queryFn: fetchIntegrations });
+  const { data: appConfig } = useQuery({ queryKey: ['config'], queryFn: fetchConfig });
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, { ok: boolean; message: string }>>({});
   const [form, setForm] = useState({ name: '', type: 'jira' as string, base_url: '', auth_type: 'pat' as string, auth_token: '', config: '{}', can_write: false });
+  const [showWriteConfirm, setShowWriteConfirm] = useState(false);
 
   const createMut = useMutation({
     mutationFn: () => createIntegration(form),
@@ -114,7 +117,13 @@ export function IntegrationSettings() {
             </select>
             <Input type="password" placeholder={editId ? "New token (leave blank to keep)" : "Auth token / API key"} value={form.auth_token} onChange={(e) => setForm((f) => ({ ...f, auth_token: e.target.value }))} />
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.can_write} onChange={(e) => setForm((f) => ({ ...f, can_write: e.target.checked }))} className="rounded" />
+              <input type="checkbox" checked={form.can_write} onChange={(e) => {
+                if (e.target.checked && appConfig?.enterpriseMode) {
+                  setShowWriteConfirm(true);
+                } else {
+                  setForm((f) => ({ ...f, can_write: e.target.checked }));
+                }
+              }} className="rounded" />
               Allow write access (create/update items in this system)
             </label>
             <Input placeholder='Extra config JSON (e.g., {"repo":"owner/repo"})' value={form.config} onChange={(e) => setForm((f) => ({ ...f, config: e.target.value }))} />
@@ -124,6 +133,25 @@ export function IntegrationSettings() {
               </Button>
               <Button variant="outline" onClick={resetForm}>Cancel</Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showWriteConfirm} onOpenChange={setShowWriteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enable Write Access?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            You are about to enable write access for this integration in enterprise mode.
+            This will allow the system to create, update, and comment on items in the external system.
+            This action will be logged.
+          </p>
+          <div className="flex gap-2 mt-3">
+            <Button onClick={() => { setForm((f) => ({ ...f, can_write: true })); setShowWriteConfirm(false); }}>
+              Enable Write Access
+            </Button>
+            <Button variant="outline" onClick={() => setShowWriteConfirm(false)}>Cancel</Button>
           </div>
         </DialogContent>
       </Dialog>

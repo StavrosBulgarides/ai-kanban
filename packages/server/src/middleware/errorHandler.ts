@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { isEnterprise } from '../lib/enterpriseConfig.js';
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof ZodError) {
@@ -8,5 +9,10 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
   }
 
   console.error('Server error:', err);
-  res.status(500).json({ error: err.message || 'Internal server error' });
+
+  if (isEnterprise()) {
+    res.status(500).json({ error: 'Internal server error' });
+  } else {
+    res.status(500).json({ error: err.message || 'Internal server error' });
+  }
 }

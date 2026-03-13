@@ -1,10 +1,12 @@
 import crypto from 'crypto';
+import { getEncryptionKey, getEncryptionSalt } from './keyManagement.js';
 
 const ALGORITHM = 'aes-256-gcm';
 
 function getKey(): Buffer {
-  const key = process.env.ENCRYPTION_KEY || 'default-dev-key-change-in-prod!!';
-  return crypto.scryptSync(key, 'product-kanban-salt', 32);
+  const key = getEncryptionKey();
+  const salt = getEncryptionSalt();
+  return crypto.scryptSync(key, salt, 32);
 }
 
 export function encrypt(text: string): string {

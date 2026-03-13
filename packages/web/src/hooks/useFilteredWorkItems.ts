@@ -16,10 +16,6 @@ export function useFilteredWorkItems(items: WorkItem[] | undefined): WorkItem[] 
       );
     }
 
-    if (filters.priorities.length > 0) {
-      filtered = filtered.filter((i) => filters.priorities.includes(i.priority));
-    }
-
     return filtered.sort((a, b) => a.sort_order - b.sort_order);
   }, [items, filters]);
 }

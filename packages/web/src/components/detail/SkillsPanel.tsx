@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Play, Plus, MessageSquare } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
-import { fetchSkills, executeSkill, runAgent } from '@/api/skills';
+import { fetchSkills, executeSkill } from '@/api/skills';
 import type { Skill, AgentRun } from '@/types/models';
 
 interface SkillsPanelProps {
@@ -14,7 +12,6 @@ interface SkillsPanelProps {
 }
 
 export function SkillsPanel({ workItemId, projectId }: SkillsPanelProps) {
-  const [adHocPrompt, setAdHocPrompt] = useState('');
   const [runResult, setRunResult] = useState<AgentRun | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -37,46 +34,12 @@ export function SkillsPanel({ workItemId, projectId }: SkillsPanelProps) {
     }
   };
 
-  const handleAdHoc = async () => {
-    if (!adHocPrompt.trim()) return;
-    setIsRunning(true);
-    setRunResult(null);
-    try {
-      const result = await runAgent({ prompt: adHocPrompt, work_item_id: workItemId });
-      setRunResult(result);
-      setAdHocPrompt('');
-      qc.invalidateQueries({ queryKey: ['agent-runs', workItemId] });
-    } finally {
-      setIsRunning(false);
-    }
-  };
-
   const globalSkills = skills?.filter((s) => !s.project_id && !s.work_item_id) || [];
   const projectSkills = skills?.filter((s) => s.project_id && !s.work_item_id) || [];
   const itemSkills = skills?.filter((s) => s.work_item_id === workItemId) || [];
 
   return (
     <div className="space-y-4">
-      {/* Ad-hoc agent prompt */}
-      <div>
-        <label className="text-xs font-medium text-gray-500 mb-1 block">Ask Agent</label>
-        <Textarea
-          value={adHocPrompt}
-          onChange={(e) => setAdHocPrompt(e.target.value)}
-          placeholder="Ask the agent anything about this work item..."
-          rows={3}
-        />
-        <Button
-          size="sm"
-          className="mt-1 w-full"
-          onClick={handleAdHoc}
-          disabled={isRunning || !adHocPrompt.trim()}
-        >
-          <MessageSquare className="h-3 w-3" />
-          {isRunning ? 'Running...' : 'Run'}
-        </Button>
-      </div>
-
       {/* Available skills */}
       {[
         { label: 'Item Skills', skills: itemSkills },

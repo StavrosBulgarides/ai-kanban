@@ -20,6 +20,12 @@ export function getStatus(id: string): Status | undefined {
   return getDb().prepare('SELECT * FROM statuses WHERE id = ?').get(id) as Status | undefined;
 }
 
+export function getStatusByName(projectId: string, name: string): Status | undefined {
+  return getDb()
+    .prepare('SELECT * FROM statuses WHERE project_id = ? AND name = ?')
+    .get(projectId, name) as Status | undefined;
+}
+
 export function createStatus(projectId: string, data: { name: string; color?: string; sort_order?: number }): Status {
   const id = newId();
   const maxOrder = getDb()

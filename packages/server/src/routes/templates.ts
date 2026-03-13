@@ -66,7 +66,6 @@ router.post('/templates/:id/trigger', (req, res) => {
     status_id: tmpl.target_status_id,
     title: data.title || tmpl.name,
     description: data.description || '',
-    priority: data.priority || 'none',
   });
 
   if (Array.isArray(data.tag_ids)) {
@@ -100,7 +99,6 @@ router.post('/work-items/:id/save-as-template', (req, res) => {
   const templateData = {
     title: workItem.title,
     description: workItem.description,
-    priority: workItem.priority,
     tag_ids: tags.map((t: any) => t.id),
   };
 

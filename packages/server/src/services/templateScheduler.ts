@@ -46,7 +46,6 @@ function triggerTemplate(templateId: string): void {
     status_id: tmpl.target_status_id,
     title: data.title || tmpl.name,
     description: data.description || '',
-    priority: data.priority || 'none',
   });
 
   // Apply tags

@@ -1,11 +1,35 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import * as Projects from '../db/models/projects.js';
+import { getDb } from '../db/connection.js';
 
 const router = Router();
 
 router.get('/', (_req, res) => {
   res.json(Projects.listProjects());
+});
+
+// Returns per-project indicators — must be before /:id to avoid wildcard match
+router.get('/indicators', (_req, res) => {
+  const rows = getDb().prepare(`
+    SELECT
+      p.id AS project_id,
+      MAX(CASE WHEN s.name = 'Input Required' AND wi.id IS NOT NULL THEN 1 ELSE 0 END) AS has_input_required,
+      CASE WHEN COUNT(wi.id) > 0 AND COUNT(wi.id) = SUM(CASE WHEN s.name = 'Done' THEN 1 ELSE 0 END) THEN 1 ELSE 0 END AS all_done
+    FROM projects p
+    LEFT JOIN statuses s ON s.project_id = p.id
+    LEFT JOIN work_items wi ON wi.status_id = s.id
+    GROUP BY p.id
+  `).all() as Array<{ project_id: string; has_input_required: number; all_done: number }>;
+
+  const indicators: Record<string, { hasInputRequired: boolean; allDone: boolean }> = {};
+  for (const row of rows) {
+    indicators[row.project_id] = {
+      hasInputRequired: row.has_input_required === 1,
+      allDone: row.all_done === 1,
+    };
+  }
+  res.json(indicators);
 });
 
 router.get('/:id', (req, res) => {

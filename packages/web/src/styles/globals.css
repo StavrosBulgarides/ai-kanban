@@ -8,6 +8,10 @@
   --color-none: #6b7280;
 }
 
+html {
+  font-size: 118%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }

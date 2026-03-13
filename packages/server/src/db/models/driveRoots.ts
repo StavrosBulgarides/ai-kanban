@@ -6,10 +6,14 @@ export interface DriveRoot {
   name: string;
   path: string;
   description: string;
+  purpose: 'input' | 'output';
   created_at: string;
 }
 
-export function listDriveRoots(): DriveRoot[] {
+export function listDriveRoots(purpose?: 'input' | 'output'): DriveRoot[] {
+  if (purpose) {
+    return getDb().prepare('SELECT * FROM drive_roots WHERE purpose = ? ORDER BY name').all(purpose) as DriveRoot[];
+  }
   return getDb().prepare('SELECT * FROM drive_roots ORDER BY name').all() as DriveRoot[];
 }
 
@@ -17,11 +21,12 @@ export function getDriveRoot(id: string): DriveRoot | undefined {
   return getDb().prepare('SELECT * FROM drive_roots WHERE id = ?').get(id) as DriveRoot | undefined;
 }
 
-export function createDriveRoot(data: { name: string; path: string; description?: string }): DriveRoot {
+export function createDriveRoot(data: { name: string; path: string; description?: string; purpose?: 'input' | 'output' }): DriveRoot {
+  const purpose = data.purpose || 'input';
   const id = newId();
   getDb().prepare(
-    'INSERT INTO drive_roots (id, name, path, description) VALUES (?, ?, ?, ?)'
-  ).run(id, data.name, data.path, data.description || '');
+    'INSERT INTO drive_roots (id, name, path, description, purpose) VALUES (?, ?, ?, ?, ?)'
+  ).run(id, data.name, data.path, data.description || '', purpose);
   return getDriveRoot(id)!;
 }
 

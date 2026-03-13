@@ -15,13 +15,13 @@ export function TemplateSettings() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({
-    name: '', description: '', title: '', itemDescription: '', priority: 'none',
+    name: '', description: '', title: '', itemDescription: '',
     schedule_cron: '', schedule_enabled: false,
   });
 
   const resetForm = () => {
     setShowForm(false); setEditId(null);
-    setForm({ name: '', description: '', title: '', itemDescription: '', priority: 'none', schedule_cron: '', schedule_enabled: false });
+    setForm({ name: '', description: '', title: '', itemDescription: '', schedule_cron: '', schedule_enabled: false });
   };
 
   const saveMut = useMutation({
@@ -29,7 +29,7 @@ export function TemplateSettings() {
       const data = {
         name: form.name,
         description: form.description,
-        template_data: { title: form.title, description: form.itemDescription, priority: form.priority },
+        template_data: { title: form.title, description: form.itemDescription },
         schedule_cron: form.schedule_cron || undefined,
         schedule_enabled: form.schedule_enabled,
       };
@@ -78,7 +78,7 @@ export function TemplateSettings() {
                     setEditId(tmpl.id);
                     setForm({
                       name: tmpl.name, description: tmpl.description,
-                      title: data.title || '', itemDescription: data.description || '', priority: data.priority || 'none',
+                      title: data.title || '', itemDescription: data.description || '',
                       schedule_cron: tmpl.schedule_cron || '', schedule_enabled: tmpl.schedule_enabled === 1,
                     });
                     setShowForm(true);
@@ -89,7 +89,7 @@ export function TemplateSettings() {
                 </div>
               </div>
               {tmpl.description && <p className="text-xs text-gray-500 mt-1">{tmpl.description}</p>}
-              <p className="text-xs text-gray-400 mt-1">Creates: "{data.title}" ({data.priority || 'none'} priority)</p>
+              <p className="text-xs text-gray-400 mt-1">Creates: "{data.title}"</p>
               {tmpl.last_triggered_at && <p className="text-xs text-gray-400">Last triggered: {new Date(tmpl.last_triggered_at).toLocaleString()}</p>}
             </div>
           );
@@ -107,10 +107,6 @@ export function TemplateSettings() {
             <p className="text-xs font-medium text-gray-500">Work Item Defaults</p>
             <Input placeholder="Default title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             <Textarea placeholder="Default description" value={form.itemDescription} onChange={(e) => setForm((f) => ({ ...f, itemDescription: e.target.value }))} rows={3} />
-            <select value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
-              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900">
-              {['none', 'low', 'medium', 'high', 'urgent'].map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
             <hr className="border-gray-200 dark:border-gray-700" />
             <p className="text-xs font-medium text-gray-500">Schedule (Optional)</p>
             <Input placeholder="Cron expression (e.g., 0 9 * * 1 = every Monday 9am)" value={form.schedule_cron} onChange={(e) => setForm((f) => ({ ...f, schedule_cron: e.target.value }))} />

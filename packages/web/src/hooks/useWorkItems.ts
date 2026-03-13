@@ -6,13 +6,14 @@ export function useWorkItems(projectId: string) {
     queryKey: ['work-items', projectId],
     queryFn: () => api.fetchWorkItems(projectId),
     enabled: !!projectId,
+    refetchInterval: 3000,
   });
 }
 
 export function useCreateWorkItem(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { status_id: string; title: string; description?: string; priority?: string }) =>
+    mutationFn: (data: { status_id: string; title?: string; description?: string }) =>
       api.createWorkItem(projectId, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['work-items', projectId] }),
   });
@@ -37,7 +38,8 @@ export function useBulkUpdateWorkItems(projectId: string) {
 export function useDeleteWorkItem(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: api.deleteWorkItem,
+    mutationFn: ({ id, deleteFiles }: { id: string; deleteFiles?: boolean }) =>
+      api.deleteWorkItem(id, deleteFiles),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['work-items', projectId] }),
   });
 }

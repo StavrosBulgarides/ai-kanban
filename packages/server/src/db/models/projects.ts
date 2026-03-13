@@ -29,10 +29,9 @@ export function createProject(data: { name: string; description?: string }): Pro
   // Create default statuses
   const defaults = [
     { name: 'Backlog', color: '#6b7280', sort_order: 0 },
-    { name: 'Todo', color: '#3b82f6', sort_order: 1 },
-    { name: 'In Progress', color: '#f59e0b', sort_order: 2 },
-    { name: 'In Review', color: '#8b5cf6', sort_order: 3 },
-    { name: 'Done', color: '#22c55e', sort_order: 4 },
+    { name: 'In Progress', color: '#f59e0b', sort_order: 1 },
+    { name: 'Input Required', color: '#ef4444', sort_order: 2 },
+    { name: 'Done', color: '#22c55e', sort_order: 3 },
   ];
 
   const stmt = db.prepare(

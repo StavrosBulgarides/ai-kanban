@@ -4,7 +4,6 @@ type ViewMode = 'kanban' | 'list';
 
 interface FilterState {
   search: string;
-  priorities: string[];
   tagIds: string[];
 }
 
@@ -22,7 +21,7 @@ interface UIState {
   setSettingsTab: (tab: string) => void;
 }
 
-const defaultFilters: FilterState = { search: '', priorities: [], tagIds: [] };
+const defaultFilters: FilterState = { search: '', tagIds: [] };
 
 export const useUIStore = create<UIState>((set) => ({
   viewMode: 'kanban',
@@ -34,6 +33,6 @@ export const useUIStore = create<UIState>((set) => ({
   filters: defaultFilters,
   setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
   resetFilters: () => set({ filters: defaultFilters }),
-  settingsTab: 'drives',
+  settingsTab: 'ai',
   setSettingsTab: (tab) => set({ settingsTab: tab }),
 }));

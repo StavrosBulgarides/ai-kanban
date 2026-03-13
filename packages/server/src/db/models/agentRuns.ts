@@ -10,6 +10,7 @@ export interface AgentRun {
   status: string;
   started_at: string;
   completed_at: string | null;
+  session_id: string | null;
 }
 
 export function getAgentRun(id: string): AgentRun | undefined {
@@ -34,9 +35,9 @@ export function createAgentRun(data: {
   return getAgentRun(id)!;
 }
 
-export function completeAgentRun(id: string, result: string, status: 'completed' | 'failed'): AgentRun | undefined {
+export function completeAgentRun(id: string, result: string, status: 'completed' | 'failed', sessionId?: string): AgentRun | undefined {
   getDb().prepare(`
-    UPDATE agent_runs SET result = ?, status = ?, completed_at = datetime('now') WHERE id = ?
-  `).run(result, status, id);
+    UPDATE agent_runs SET result = ?, status = ?, completed_at = datetime('now'), session_id = ? WHERE id = ?
+  `).run(result, status, sessionId || null, id);
   return getAgentRun(id);
 }

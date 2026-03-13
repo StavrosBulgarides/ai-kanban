@@ -3,7 +3,6 @@ import { useStatuses } from '@/hooks/useStatuses';
 import { useFilteredWorkItems } from '@/hooks/useFilteredWorkItems';
 import { useUIStore } from '@/stores/uiStore';
 import { Badge } from '@/components/ui/Badge';
-import { PRIORITY_COLORS } from '@/lib/utils';
 import type { Status } from '@/types/models';
 
 interface ListViewProps {
@@ -26,7 +25,6 @@ export function ListView({ projectId }: ListViewProps) {
           <tr className="border-b border-gray-200 dark:border-gray-800 text-left text-gray-500">
             <th className="pb-2 pl-2 font-medium">Title</th>
             <th className="pb-2 font-medium w-28">Status</th>
-            <th className="pb-2 font-medium w-24">Priority</th>
             <th className="pb-2 font-medium w-36">Updated</th>
           </tr>
         </thead>
@@ -40,12 +38,7 @@ export function ListView({ projectId }: ListViewProps) {
                 className="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
               >
                 <td className="py-2 pl-2">
-                  <div className="flex items-center gap-2">
-                    {item.priority !== 'none' && (
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_COLORS[item.priority]}`} />
-                    )}
-                    <span className="font-medium">{item.title}</span>
-                  </div>
+                  <span className={`font-medium ${!item.title ? 'text-gray-400 italic' : ''}`}>{item.title || 'Untitled'}</span>
                   {item.description && (
                     <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.description}</p>
                   )}
@@ -53,7 +46,6 @@ export function ListView({ projectId }: ListViewProps) {
                 <td className="py-2">
                   {status && <Badge color={status.color}>{status.name}</Badge>}
                 </td>
-                <td className="py-2 capitalize text-gray-600">{item.priority}</td>
                 <td className="py-2 text-gray-500 text-xs">{new Date(item.updated_at).toLocaleDateString()}</td>
               </tr>
             );
