@@ -6,6 +6,7 @@ import { AISettings } from '@/components/settings/AISettings';
 import { SourceSettings } from '@/components/settings/SourceSettings';
 import { IntegrationSettings } from '@/components/settings/IntegrationSettings';
 import { SkillSettings } from '@/components/settings/SkillSettings';
+import { PromptTemplateSettings } from '@/components/settings/PromptTemplateSettings';
 import { TemplateSettings } from '@/components/settings/TemplateSettings';
 import { LogSettings } from '@/components/settings/LogSettings';
 import { SecuritySettings } from '@/components/settings/SecuritySettings';
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'ai', label: 'AI' },
   { id: 'sources', label: 'Input / Output' },
   { id: 'integrations', label: 'Integrations' },
+  { id: 'prompts', label: 'Prompts' },
   { id: 'skills', label: 'Skills' },
   { id: 'templates', label: 'Templates' },
   { id: 'security', label: 'Security' },
@@ -59,6 +61,7 @@ export function SettingsPage() {
           {settingsTab === 'sources' && <SourceSettings />}
           {settingsTab === 'integrations' && <IntegrationSettings />}
           {settingsTab === 'skills' && <SkillSettings />}
+          {settingsTab === 'prompts' && <PromptTemplateSettings />}
           {settingsTab === 'templates' && <TemplateSettings />}
           {settingsTab === 'security' && <SecuritySettings />}
           {settingsTab === 'logs' && <LogSettings />}

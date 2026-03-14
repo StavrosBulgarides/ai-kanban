@@ -8,6 +8,7 @@ export interface PromptTemplate {
   description: string;
   template: string;
   variables: string;
+  is_active: number;
   created_at: string;
   updated_at: string;
 }
@@ -15,14 +16,31 @@ export interface PromptTemplate {
 export function listPromptTemplates(projectId?: string): PromptTemplate[] {
   if (projectId) {
     return getDb().prepare(
-      'SELECT * FROM prompt_templates WHERE project_id = ? OR project_id IS NULL ORDER BY name'
+      'SELECT * FROM prompt_templates WHERE project_id = ? OR project_id IS NULL ORDER BY is_active DESC, name'
     ).all(projectId) as PromptTemplate[];
   }
-  return getDb().prepare('SELECT * FROM prompt_templates ORDER BY name').all() as PromptTemplate[];
+  return getDb().prepare('SELECT * FROM prompt_templates ORDER BY is_active DESC, name').all() as PromptTemplate[];
 }
 
 export function getPromptTemplate(id: string): PromptTemplate | undefined {
   return getDb().prepare('SELECT * FROM prompt_templates WHERE id = ?').get(id) as PromptTemplate | undefined;
+}
+
+export function getActivePromptTemplate(): PromptTemplate | undefined {
+  return getDb().prepare('SELECT * FROM prompt_templates WHERE is_active = 1 LIMIT 1').get() as PromptTemplate | undefined;
+}
+
+export function activatePromptTemplate(id: string): PromptTemplate | undefined {
+  const existing = getPromptTemplate(id);
+  if (!existing) return undefined;
+  const db = getDb();
+  db.prepare('UPDATE prompt_templates SET is_active = 0').run();
+  db.prepare('UPDATE prompt_templates SET is_active = 1, updated_at = ? WHERE id = ?').run(new Date().toISOString(), id);
+  return getPromptTemplate(id);
+}
+
+export function deactivateAll(): void {
+  getDb().prepare('UPDATE prompt_templates SET is_active = 0').run();
 }
 
 export function createPromptTemplate(data: {

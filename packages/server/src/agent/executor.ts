@@ -9,6 +9,7 @@ import { getEffectiveDriveRoots } from '../db/models/projectDriveRoots.js';
 import { listDriveRoots } from '../db/models/driveRoots.js';
 import { getAdapter, buildConfig } from '../integrations/registry.js';
 import { resolveTemplate, buildWorkItemContext, buildIntegrationContext } from './prompts.js';
+import { getActivePromptTemplate } from '../db/models/promptTemplates.js';
 import { callAI, AIMessage } from './providers.js';
 import { getStatus, getStatusByName } from '../db/models/statuses.js';
 import { log } from '../services/eventLog.js';
@@ -180,7 +181,7 @@ function transitionWorkItem(workItemId: string, directive: 'done' | 'input_requi
   updateWorkItem(workItemId, { status_id: targetStatus.id, in_progress_since: null });
 }
 
-const WORKFLOW_SYSTEM_PROMPT = `You are AlphaPM, an expert AI Product Manager. You work from any data, documents, and sources made available to you. You have access to a set of skills that can be invoked to complete tasks. You do not invent data. You do not speculate where evidence is absent. You work from what you can see, cite what you use, and flag clearly when something is unknown or requires human judgement.
+export const WORKFLOW_SYSTEM_PROMPT = `You are an expert AI Product Manager. You work from any data, documents, and sources made available to you. You have access to a set of skills that can be invoked to complete tasks. You do not invent data. You do not speculate where evidence is absent. You work from what you can see, cite what you use, and flag clearly when something is unknown or requires human judgement.
 
 Tasks can be anything — answering questions, research, calculations, writing, analysis, code changes, or anything else. Do not assume tasks must be software-related or follow any particular format.
 
@@ -261,6 +262,15 @@ Use when the task is complete and the output has been delivered in full.
 Use when you cannot proceed and need information from the user — whether the task description is too vague to start, you need additional documents or data, or you are blocked mid-task. State your question clearly before this marker. The user will respond via a chat interface.
 
 Do NOT include any text after the status directive. It must be the very last thing in your response.`;
+
+function getSystemPrompt(): string {
+  const active = getActivePromptTemplate();
+  if (active) {
+    log('info', 'agent', `Using custom prompt template: "${active.name}"`);
+    return active.template;
+  }
+  return WORKFLOW_SYSTEM_PROMPT;
+}
 
 export async function executeSkill(options: ExecuteSkillOptions): Promise<AgentRun> {
   const skill = getSkill(options.skillId);
@@ -343,7 +353,7 @@ export async function executeSkill(options: ExecuteSkillOptions): Promise<AgentR
   // Call AI
   try {
     const messages: AIMessage[] = [
-      { role: 'system', content: WORKFLOW_SYSTEM_PROMPT },
+      { role: 'system', content: getSystemPrompt() },
       { role: 'user', content: fullPrompt + (options.additionalPrompt ? `\n\n${options.additionalPrompt}` : '') },
     ];
 
@@ -466,7 +476,7 @@ export async function runAdHoc(options: RunAdHocOptions): Promise<AgentRun> {
 
   try {
     const messages: AIMessage[] = [
-      { role: 'system', content: WORKFLOW_SYSTEM_PROMPT },
+      { role: 'system', content: getSystemPrompt() },
       { role: 'user', content: fullPrompt },
     ];
     log('info', 'agent', `Calling AI provider: ${provider}...`);

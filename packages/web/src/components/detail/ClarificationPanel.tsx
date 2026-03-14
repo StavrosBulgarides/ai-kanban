@@ -61,6 +61,11 @@ export function ClarificationPanel({ workItemId, projectId }: ClarificationPanel
           runAgent({
             prompt: 'Work on this task. Review all attached files, integration data, and skills. Complete the task described below.',
             work_item_id: workItemId,
+          }).then(() => {
+            qc.invalidateQueries({ queryKey: ['work-items'] });
+            qc.invalidateQueries({ queryKey: ['work-item', workItemId] });
+            qc.invalidateQueries({ queryKey: ['agent-runs', workItemId] });
+            qc.invalidateQueries({ queryKey: ['file-references', workItemId] });
           }).catch(err => console.error('Failed to start agent:', err));
         },
       }

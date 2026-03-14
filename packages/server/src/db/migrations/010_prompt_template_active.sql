@@ -1,0 +1,1 @@
+ALTER TABLE prompt_templates ADD COLUMN is_active INTEGER NOT NULL DEFAULT 0;

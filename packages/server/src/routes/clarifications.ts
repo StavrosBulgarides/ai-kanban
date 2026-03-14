@@ -50,7 +50,7 @@ router.post('/work-items/:id/clarifications', async (req, res) => {
   const isPostCompletion = status?.name === 'Done' || lastRun != null;
 
   const systemPrompt = isPostCompletion
-    ? `You are AlphaPM, an expert AI Product Manager. You are in a follow-up chat for a work item that has already been worked on.
+    ? `You are an expert AI Product Manager. You are in a follow-up chat for a work item that has already been worked on.
 
 ## Work Item Context
 ${workItemSummary}
@@ -68,7 +68,7 @@ If you genuinely need more information, ask one brief, focused question.
 Be direct and concise. No waffle. No filler phrases. Professional but human.
 
 Do NOT include any text after [READY].`
-    : `You are AlphaPM, an expert AI Product Manager. You are in a clarification chat for a work item that needs more context before it can be worked on.
+    : `You are an expert AI Product Manager. You are in a clarification chat for a work item that needs more context before it can be worked on.
 
 ## Work Item Context
 ${workItemSummary}

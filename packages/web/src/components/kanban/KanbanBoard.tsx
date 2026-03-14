@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
+import { useQueryClient } from '@tanstack/react-query';
 import { useWorkItems, useCreateWorkItem, useBulkUpdateWorkItems, useDeleteWorkItem } from '@/hooks/useWorkItems';
 import { useStatuses } from '@/hooks/useStatuses';
 import { useFilteredWorkItems } from '@/hooks/useFilteredWorkItems';
@@ -27,6 +28,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const bulkUpdate = useBulkUpdateWorkItems(projectId);
   const filteredItems = useFilteredWorkItems(workItems);
   const setSelectedWorkItemId = useUIStore((s) => s.setSelectedWorkItemId);
+  const qc = useQueryClient();
 
   const visibleStatuses = (statuses || []).filter((s) => !s.is_hidden).sort((a, b) => a.sort_order - b.sort_order);
 
@@ -117,12 +119,19 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         const destStatus = getStatusById(destStatusId);
 
         if (destStatus?.name === 'In Progress') {
+          const invalidateAfterRun = () => {
+            qc.invalidateQueries({ queryKey: ['work-items'] });
+            qc.invalidateQueries({ queryKey: ['work-item', draggableId] });
+            qc.invalidateQueries({ queryKey: ['agent-runs', draggableId] });
+            qc.invalidateQueries({ queryKey: ['file-references', draggableId] });
+          };
+
           if (sourceStatus?.name === 'Backlog') {
             // New task — start agent
             runAgent({
               prompt: `Work on this task. Review all attached files, integration data, and skills. Complete the task described below.`,
               work_item_id: draggableId,
-            }).catch((err) => {
+            }).then(invalidateAfterRun).catch((err) => {
               console.error('Failed to start agent for work item:', err);
             });
           } else if (sourceStatus?.name === 'Input Required') {
@@ -130,14 +139,14 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             runAgent({
               prompt: `The user has provided additional information or revised instructions for this task. Review the work item description and any recent updates, then continue working on the task.`,
               work_item_id: draggableId,
-            }).catch((err) => {
+            }).then(invalidateAfterRun).catch((err) => {
               console.error('Failed to resume agent for work item:', err);
             });
           }
         }
       }
     },
-    [filteredItems, getItemsForStatus, getStatusById, bulkUpdate]
+    [filteredItems, getItemsForStatus, getStatusById, bulkUpdate, qc]
   );
 
   const handleAddCard = useCallback(

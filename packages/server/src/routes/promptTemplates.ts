@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import * as PromptTemplates from '../db/models/promptTemplates.js';
+import { WORKFLOW_SYSTEM_PROMPT } from '../agent/executor.js';
 
 const router = Router();
+
+router.get('/prompt-templates/default', (_req, res) => {
+  res.json({ template: WORKFLOW_SYSTEM_PROMPT });
+});
 
 router.get('/prompt-templates', (req, res) => {
   res.json(PromptTemplates.listPromptTemplates(req.query.projectId as string | undefined));
@@ -20,6 +25,11 @@ const createSchema = z.object({
   description: z.string().optional(),
   template: z.string().min(1),
   variables: z.array(z.object({ name: z.string(), type: z.string(), default: z.string().optional() })).optional(),
+});
+
+router.post('/prompt-templates/deactivate-all', (_req, res) => {
+  PromptTemplates.deactivateAll();
+  res.json({ ok: true });
 });
 
 router.post('/prompt-templates', (req, res) => {
@@ -41,6 +51,12 @@ router.put('/prompt-templates/:id', (req, res) => {
 router.delete('/prompt-templates/:id', (req, res) => {
   if (!PromptTemplates.deletePromptTemplate(req.params.id)) return res.status(404).json({ error: 'Template not found' });
   res.json({ ok: true });
+});
+
+router.post('/prompt-templates/:id/activate', (req, res) => {
+  const tmpl = PromptTemplates.activatePromptTemplate(req.params.id);
+  if (!tmpl) return res.status(404).json({ error: 'Template not found' });
+  res.json(tmpl);
 });
 
 export default router;

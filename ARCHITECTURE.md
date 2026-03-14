@@ -258,7 +258,7 @@ This is the core of the system. When a work item is dragged to "In Progress", th
   ┌─────────────────────────────────┐
   │  3. AI PROVIDER CALL            │
   │                                 │
-  │  System prompt: AlphaPM persona │
+  │  System prompt: default or user │
   │  User prompt: assembled context │
   │  Tools: enabled tool list       │
   │                                 │

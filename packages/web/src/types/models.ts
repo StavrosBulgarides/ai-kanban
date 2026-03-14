@@ -98,6 +98,7 @@ export interface PromptTemplate {
   description: string;
   template: string;
   variables: string;
+  is_active: number;
   created_at: string;
   updated_at: string;
 }

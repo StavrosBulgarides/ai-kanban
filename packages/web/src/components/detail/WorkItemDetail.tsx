@@ -364,11 +364,13 @@ function OutputPanel({ workItemId, isDone }: { workItemId: string; isDone: boole
       const res = await fetch(`/api/work-items/${workItemId}/agent-runs`);
       return res.json();
     },
+    refetchInterval: isDone ? false : 3000,
   });
 
   const { data: fileRefs } = useQuery({
     queryKey: ['file-references', workItemId],
     queryFn: () => fetchFileReferences(workItemId),
+    refetchInterval: isDone ? false : 3000,
   });
 
   const outputFiles = (fileRefs || []).filter(f => f.ref_type === 'output');
